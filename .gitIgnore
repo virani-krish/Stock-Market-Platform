@@ -1,0 +1,9 @@
+# Ignore all node_modules everywhere
+node_modules/
+
+# Ignore all env files
+.env
+
+# OS / editor files
+.DS_Store
+.vscode/
