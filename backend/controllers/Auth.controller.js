@@ -12,7 +12,7 @@ module.exports.Signup = async (req, res, next) => {
       return res.json({ message: "User already exists" });
     }
 
-    const hashPassword = await bcrypt.hash(password, 10);
+    const hashPassword = await bcrypt.hash(password, 12);
 
     const user = await UserModel.create({ email, password: hashPassword, username, createdAt });
 
@@ -68,4 +68,8 @@ module.exports.Login = async (req, res, next) => {
   } catch (error) {
     console.error(error);
   }
+}
+
+module.exports.verifyUser = async (req, res) => {
+  
 }

@@ -3,6 +3,8 @@ require("dotenv").config();
 const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
+const cookieParser = require("cookie-parser");
+
 
 // model
 const { HoldingModel } = require("./model/Holding.model");
@@ -16,10 +18,15 @@ const MONGO_URL = process.env.MONGO_URL;
 
 const app = express();
 
-app.use(cors());
+
+app.use(cors({
+    origin: ["http://localhost:3000", "http://localhost:3001"],
+    credentials: true,
+}));
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(cookieParser());
 
 app.use("/auth", authRoute);
 
@@ -63,7 +70,10 @@ app.post("/newOrder", async (req, res) => {
             await HoldingModel.create({
                 name,
                 qty,
-                avg: price
+                avg: price,
+                price,
+                net: "+0.00%",
+                day: "+0.00%"
             });
         }
 
