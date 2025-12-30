@@ -10,16 +10,16 @@ const Footer = () => {
           <p style={{ fontSize: "14px" }}>© 2010 - 2025, Zerodha Broking Ltd.</p>
           <p style={{ fontSize: "14px" }}>All rights reserved.</p>
           <div>
-            <i class="fa-brands fa-x-twitter fs-4 text-muted m-2"></i>
-            <i class="fa-brands fa-facebook fs-4 text-muted m-2"></i>
-            <i class="fa-brands fa-instagram fs-4 text-muted m-2"></i>
-            <i class="fa-brands fa-linkedin-in fs-4 text-muted m-2"></i>
+            <i className="fa-brands fa-x-twitter fs-4 text-muted m-2"></i>
+            <i className="fa-brands fa-facebook fs-4 text-muted m-2"></i>
+            <i className="fa-brands fa-instagram fs-4 text-muted m-2"></i>
+            <i className="fa-brands fa-linkedin-in fs-4 text-muted m-2"></i>
           </div>
           <hr />
           <div>
-            <i class="fa-brands fa-youtube fs-5 text-muted m-2"></i>
-            <i class="fa-brands fa-whatsapp fs-5 text-muted m-2"></i>
-            <i class="fa-brands fa-telegram fs-5 text-muted m-2"></i>
+            <i className="fa-brands fa-youtube fs-5 text-muted m-2"></i>
+            <i className="fa-brands fa-whatsapp fs-5 text-muted m-2"></i>
+            <i className="fa-brands fa-telegram fs-5 text-muted m-2"></i>
           </div>
         </div>
         <div className="col">

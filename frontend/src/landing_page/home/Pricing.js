@@ -7,7 +7,7 @@ const Pricing = () => {
         <div className="col-4 mt-5">
           <h2>Unbeatable pricing</h2>
           <p>We pioneered the concept of discount broking and price transparency in India. Flat fees and no hidden charges.</p>
-          <a href="" style={{ textDecoration: "none" }}>See pricing<i class="fa-solid fa-arrow-right-long"></i></a>
+          <a href="" style={{ textDecoration: "none" }}>See pricing<i className="fa-solid fa-arrow-right-long"></i></a>
         </div>
         <div className="col-2"></div>
         <div className="col-6 mt-5">
