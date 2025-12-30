@@ -4,9 +4,12 @@ const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
 
+// model
 const { HoldingModel } = require("./model/Holding.model");
 const { PositionModel } = require("./model/Position.model");
 const { OrderModel } = require("./model/Order.model");
+// routes
+const authRoute = require("./router/Auth.route");
 
 const PORT = process.env.PORT || 3002;
 const MONGO_URL = process.env.MONGO_URL;
@@ -18,7 +21,7 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-
+app.use("/auth", authRoute);
 
 app.get('/allHoldings', async (req, res) => {
     let allHoldings = await HoldingModel.find({});
@@ -42,9 +45,31 @@ app.post("/newOrder", async (req, res) => {
         });
         await newOrder.save();
 
+        // Add stock to holding
+        const holding = await HoldingModel.findOne({ name });
+
+        // if stock purches second time
+        if (holding) {
+            const newQty = holding.qty + qty;
+            const newAvg = ((holding.qty * holding.avg) + (qty * price)) / newQty;
+
+            holding.qty = newQty;
+            holding.avg = newAvg;
+
+            await holding.save();
+        }
+        // if stock purches first time
+        else {
+            await HoldingModel.create({
+                name,
+                qty,
+                avg: price
+            });
+        }
+
         return res.status(200).json({ message: "order Saved!", success: true });
     } else if (req.body.mode == "SELL") {
-        
+
         const holding = await HoldingModel.findOne({
             name,
         });
@@ -64,6 +89,16 @@ app.post("/newOrder", async (req, res) => {
         });
 
         await newOrder.save();
+
+        // reduce stock from holding
+        holding.qty -= qty;
+
+        if (holding.qty === 0) {
+            await HoldingModel.deleteOne({ name });
+        } else {
+            await holding.save();
+        }
+
 
         return res.status(200).json({ message: "order Saved!", success: true });
     } else {
