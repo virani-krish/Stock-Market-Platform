@@ -39,16 +39,21 @@ const SellActionWindow = ({ uid }) => {
     };
 
 
-    const handleSellClick = () => {
+    const handleSellClick = async () => {
 
-        axios.post("http://localhost:3002/newOrder", {
-            name: uid,
-            qty: stockQuantity,
-            price: stockPrice,
-            mode: "SELL",
-        });
+        try {
+            await axios.post("http://localhost:3002/newOrder", {
+                name: uid,
+                qty: stockQuantity,
+                price: stockPrice,
+                mode: "SELL",
+            });
 
-        closeSellWindow();
+            closeSellWindow();
+        } catch (error) {
+            alert(error.response?.data?.message || "Sell failed");
+        }
+
     };
 
     const handleCancelClick = () => {

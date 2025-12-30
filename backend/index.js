@@ -31,16 +31,44 @@ app.get('/allPositions', async (req, res) => {
 });
 
 app.post("/newOrder", async (req, res) => {
+    const { name, qty, price, mode } = req.body;
 
-    let newOrder = new OrderModel({
-        name: req.body.name,
-        qty: req.body.qty,
-        price: req.body.price,
-        mode: req.body.mode,
-    });
-    await newOrder.save();
+    if (req.body.mode == "BUY") {
+        let newOrder = new OrderModel({
+            name: name,
+            qty: qty,
+            price: price,
+            mode: mode,
+        });
+        await newOrder.save();
 
-    res.send("order Saved!")
+        return res.status(200).json({ message: "order Saved!", success: true });
+    } else if (req.body.mode == "SELL") {
+        
+        const holding = await HoldingModel.findOne({
+            name,
+        });
+
+        if (!holding || holding.qty < qty) {
+            return res.status(400).json({
+                success: false,
+                message: "Insufficient stock quantity",
+            });
+        }
+
+        let newOrder = new OrderModel({
+            name: name,
+            qty: qty,
+            price: price,
+            mode: mode,
+        });
+
+        await newOrder.save();
+
+        return res.status(200).json({ message: "order Saved!", success: true });
+    } else {
+        return res.status(400).json({ message: "Something went wronge", success: false });
+    }
 
 });
 

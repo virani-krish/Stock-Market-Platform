@@ -39,8 +39,8 @@ const BuyActionWindow = ({ uid }) => {
     };
 
 
-    const handleBuyClick = () => {
-        axios.post("http://localhost:3002/newOrder", {
+    const handleBuyClick = async () => {
+        await axios.post("http://localhost:3002/newOrder", {
             name: uid,
             qty: stockQuantity,
             price: stockPrice,
