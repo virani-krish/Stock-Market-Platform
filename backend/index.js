@@ -4,8 +4,9 @@ const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
 
-const HoldingsModel = require("./model/Holding.model");
-const PositionModel = require("./model/Position.model");
+const { HoldingModel } = require("./model/Holding.model");
+const { PositionModel } = require("./model/Position.model");
+const { OrderModel } = require("./model/Order.model");
 
 const PORT = process.env.PORT || 3002;
 const MONGO_URL = process.env.MONGO_URL;
@@ -20,13 +21,27 @@ app.use(express.urlencoded({ extended: true }));
 
 
 app.get('/allHoldings', async (req, res) => {
-    let allHoldings = await HoldingsModel.find({});
+    let allHoldings = await HoldingModel.find({});
     res.send(allHoldings);
 });
 
 app.get('/allPositions', async (req, res) => {
     let allPositions = await PositionModel.find({});
     res.send(allPositions);
+});
+
+app.post("/newOrder", async (req, res) => {
+
+    let newOrder = new OrderModel({
+        name: req.body.name,
+        qty: req.body.qty,
+        price: req.body.price,
+        mode: req.body.mode,
+    });
+    await newOrder.save();
+
+    res.send("order Saved!")
+
 });
 
 

@@ -4,7 +4,8 @@
     height: 63%;
     background: rgb(245, 245, 245);
     position: absolute;
-    bottom: 0;
+    /* bottom: 0; */
+    top: 20%;
     left: 35%;
     cursor: move;
     box-sizing: border-box;
