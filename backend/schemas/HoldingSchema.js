@@ -1,7 +1,12 @@
-const { Schema } = require("mongoose");
+const { Schema, default: mongoose } = require("mongoose");
 
 const HoldingSchema = new Schema({
 
+    user: {
+        type: Schema.Types.ObjectId,
+        ref: "user",
+        required: true
+    },
     name: {
         type: String,
     },

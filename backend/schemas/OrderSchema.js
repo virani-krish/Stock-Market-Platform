@@ -1,6 +1,12 @@
 const { Schema, Types } = require("mongoose");
 
 const OrderSchema = new Schema({
+
+    user: {
+        type: Schema.Types.ObjectId,
+        ref: "user",
+        required: true
+    },
     name: {
         type: String,
     },
