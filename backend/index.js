@@ -5,6 +5,7 @@ const mongoose = require("mongoose");
 const cors = require("cors");
 const cookieParser = require("cookie-parser");
 
+const authMiddleware = require("./middleware/AuthMiddleware");
 
 // model
 const { HoldingModel } = require("./model/Holding.model");
@@ -30,21 +31,25 @@ app.use(cookieParser());
 
 app.use("/auth", authRoute);
 
-app.get('/allHoldings', async (req, res) => {
-    let allHoldings = await HoldingModel.find({});
+app.get('/allHoldings', authMiddleware, async (req, res) => {
+    const userId = req.user._id;
+    let allHoldings = await HoldingModel.find({ user: userId });
     res.send(allHoldings);
 });
 
-app.get('/allPositions', async (req, res) => {
-    let allPositions = await PositionModel.find({});
+app.get('/allPositions', authMiddleware, async (req, res) => {
+    const userId = req.user._id;
+    let allPositions = await PositionModel.find({ user: userId });
     res.send(allPositions);
 });
 
-app.post("/newOrder", async (req, res) => {
+app.post("/newOrder", authMiddleware, async (req, res) => {
     const { name, qty, price, mode } = req.body;
+    const userId = req.user._id;
 
     if (req.body.mode == "BUY") {
         let newOrder = new OrderModel({
+            user: userId,
             name: name,
             qty: qty,
             price: price,
@@ -68,6 +73,7 @@ app.post("/newOrder", async (req, res) => {
         // if stock purches first time
         else {
             await HoldingModel.create({
+                user: userId,
                 name,
                 qty,
                 avg: price,
@@ -82,6 +88,7 @@ app.post("/newOrder", async (req, res) => {
 
         const holding = await HoldingModel.findOne({
             name,
+            user: userId
         });
 
         if (!holding || holding.qty < qty) {
@@ -92,6 +99,7 @@ app.post("/newOrder", async (req, res) => {
         }
 
         let newOrder = new OrderModel({
+            user: userId,
             name: name,
             qty: qty,
             price: price,
