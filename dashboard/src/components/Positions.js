@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import axios from "axios";
+import api from "./api/axios"
 
 // import { positions } from "../data/data";
 
@@ -8,12 +8,17 @@ const Positions = () => {
   let [allPositions, setAllPositions] = useState([]);
 
   useEffect(() => {
-    axios.get("http://localhost:3002/allPositions", {
-      withCredentials: true
-    })
-      .then((res) => {
+    const fetchPositions = async () => {
+      try {
+        const res = await api.get("/allPositions");
         setAllPositions(res.data);
-      });
+      } catch (err) {
+        // 401 is handled globally by axios interceptor
+        console.error("Failed to fetch holdings");
+      }
+    };
+
+    fetchPositions();
   }, []);
 
   return (
