@@ -50,9 +50,8 @@ const Home = () => {
 
   return (
     <>
-      <TopBar />
+      <TopBar username={username} />
       <Dashboard />
-      <ToastContainer />
     </>
   );
 };
