@@ -5,6 +5,8 @@ const mongoose = require("mongoose");
 const cors = require("cors");
 const cookieParser = require("cookie-parser");
 
+const { fetchPrice, getCachedPrice } = require("./services/yahoo.service");
+const isMarketOpen = require("./utils/marketTime");
 const authMiddleware = require("./middleware/AuthMiddleware");
 
 // model
@@ -28,6 +30,43 @@ app.use(cors({
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
+
+
+
+// Watchlist (add/remove stocks here)
+const SYMBOLS = [
+    "INFY.NS",
+    "TCS.NS",
+    "ONGC.NS",
+    "ITC.NS",
+    "WIPRO.NS",
+    "RELIANCE.NS",
+    "HDFCBANK.NS",
+    "SBIN.NS",
+    "LT.NS",
+    "M&M.NS",
+];
+
+// start background job
+fetchPrice();
+setInterval(() => {
+    if (isMarketOpen()) fetchPrice();
+}, 5000);
+
+
+app.get("/stocks", (req, res) => {
+    const { data, lastUpdated } = getCachedPrice();
+
+    if (!data.length) {
+        return res.status(503).json({ error: "Stock data not ready" });
+    }
+
+    res.json({
+        marketOpen: isMarketOpen(),
+        lastUpdated,
+        data,
+    });
+});
 
 app.use("/auth", authRoute);
 
