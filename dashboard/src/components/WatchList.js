@@ -1,12 +1,41 @@
-import React, { useState, useContext } from "react";
+import React, { useState, useContext, useEffect } from "react";
 import GeneralContext from "./GeneralContext";
 
 import { Tooltip, Grow } from '@mui/material';
 import { BarChartOutlined, KeyboardArrowDown, KeyboardArrowUp, MoreHoriz } from '@mui/icons-material'
 
-import { watchlist } from "../data/data";
+// import { watchlist } from "../data/data";
+import { fetchStocks } from "./api/stocks";
 
 const WatchList = () => {
+
+  const [stocks, setStocks] = useState([]);
+  const [loading, setLoading] = useState(true);
+  
+  const { setMarketOpen } = useContext(GeneralContext);
+
+  useEffect(() => {
+    const loadStocks = async () => {
+      try {
+        const res = await fetchStocks();
+        setStocks(res.data); // <-- backend "data"
+        setMarketOpen(res.marketOpen);
+      } catch (err) {
+        console.error("Failed to load stocks", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadStocks();
+
+    // refresh every 5 seconds
+    const interval = setInterval(loadStocks, 5000);
+    return () => clearInterval(interval);
+  }, []);
+
+  if (loading) return <div>Loading...</div>;
+
   return (
     <div className="watchlist-container">
       <div className="search-container">
@@ -17,11 +46,11 @@ const WatchList = () => {
           placeholder="Search eg:infy, bse, nifty fut weekly, gold mcx"
           className="search"
         />
-        <span className="counts"> {watchlist.length} / 50</span>
+        <span className="counts"> {stocks.length} / 50</span>
       </div>
 
       <ul className="list">
-        {watchlist.map((stock, index) => {
+        {stocks.map((stock, index) => {
           return (
             <WatchListItem stock={stock} key={index} />
           )
@@ -47,10 +76,10 @@ const WatchListItem = ({ stock }) => {
   return (
     <li onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave}>
       <div className="item">
-        <p className={stock.isDown ? "down" : "up"}>{stock.name}</p>
+        <p className={stock.percent < 0 ? "down" : "up"}>{stock.name}</p>
         <div className="itemInfo">
-          <span className="percent">{stock.percent}</span>
-          {stock.isDown ? (
+          <span className="percent">{stock.percent.toFixed(2)}%</span>
+          {stock.percent < 0 ? (
             <KeyboardArrowDown className="down" />
           ) : (
             <KeyboardArrowUp className="up" />

@@ -1,8 +1,12 @@
-import React from "react";
+import React, {useContext} from "react";
 
 import Menu from "./Menu";
+import GeneralContext from "./GeneralContext";
 
-const TopBar = ({username}) => {
+const TopBar = ({ username }) => {
+
+  const { marketOpen } = useContext(GeneralContext);
+
   return (
     <div className="topbar-container">
       <div className="indices-container">
@@ -15,6 +19,11 @@ const TopBar = ({username}) => {
           <p className="index">SENSEX</p>
           <p className="index-points">{100.2}</p>
           <p className="percent"></p>
+        </div>
+        <div>
+          <p className={marketOpen ? "market-open" : "market-closed"}>
+            Market {marketOpen ? "Open" : "Closed"}
+          </p>
         </div>
       </div>
 

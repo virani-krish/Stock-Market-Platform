@@ -579,12 +579,34 @@ hr {
 .indices-container {
   flex-basis: 32%;
   height: 100%;
-  padding: 10px 20px;
+  padding: 10px 2px;
   border-right: 1px solid rgb(224, 224, 224);
   box-sizing: border-box;
   display: flex;
   align-items: center;
   justify-content: space-around;
+}
+
+.market-open {
+  color: #4caf50;
+  font-size: 12px;
+  padding-right: 5px;
+  font-weight: 500;
+  animation: blink 1.5s infinite;
+}
+
+.market-close {
+  color: #d60000;
+  font-size: 12px;
+  padding-right: 5px;
+  font-weight: 500;
+  animation: blink 1.5s infinite;
+}
+
+@keyframes blink {
+  0%   { opacity: 1; }
+  50%  { opacity: 0.1; }
+  100% { opacity: 1; }
 }
 
 .nifty {
