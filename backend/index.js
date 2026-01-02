@@ -15,6 +15,7 @@ const { PositionModel } = require("./model/Position.model");
 const { OrderModel } = require("./model/Order.model");
 // routes
 const authRoute = require("./router/Auth.route");
+const stockRoute = require("./router/Stock.route");
 
 const PORT = process.env.PORT || 3002;
 const MONGO_URL = process.env.MONGO_URL;
@@ -33,19 +34,6 @@ app.use(cookieParser());
 
 
 
-// Watchlist (add/remove stocks here)
-const SYMBOLS = [
-    "INFY.NS",
-    "TCS.NS",
-    "ONGC.NS",
-    "ITC.NS",
-    "WIPRO.NS",
-    "RELIANCE.NS",
-    "HDFCBANK.NS",
-    "SBIN.NS",
-    "LT.NS",
-    "M&M.NS",
-];
 
 // start background job
 fetchPrice();
@@ -54,19 +42,7 @@ setInterval(() => {
 }, 5000);
 
 
-app.get("/stocks", (req, res) => {
-    const { data, lastUpdated } = getCachedPrice();
-
-    if (!data.length) {
-        return res.status(503).json({ error: "Stock data not ready" });
-    }
-
-    res.json({
-        marketOpen: isMarketOpen(),
-        lastUpdated,
-        data,
-    });
-});
+app.use("/stocks", stockRoute);
 
 app.use("/auth", authRoute);
 
