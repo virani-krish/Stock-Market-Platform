@@ -50,22 +50,27 @@ app.get('/allHoldings', authMiddleware, async (req, res) => {
     const userId = req.user._id;
     let allHoldings = await HoldingModel.find({ user: userId });
 
-    const result = holdings.map(h => {
-        const live = livePrices[h.name]; 
+    const { stockCache } = getCachedPrice();
 
-        const ltp = live.ltp;
-        const prevClose = live.prevClose;
+    const result = allHoldings.map(h => {
+        const live = stockCache[h.symbol];
+
+        const ltp = live ? live.price : h.avgPrice;
+        const prevClose = live
+            ? live.price - live.change
+            : h.avgPrice;
 
         return {
-            symbol: h.name,
+            symbol: h.symbol,
+            name: h.name,
             qty: h.qty,
-            avgPrice: h.avg,
+            avgPrice: h.avgPrice,
 
             ltp,
             currentValue: h.qty * ltp,
 
-            netPnl: (ltp - h.avg) * h.qty,
-            netPnlPercent: ((ltp - h.avg) / h.avg) * 100,
+            netPnl: (ltp - h.avgPrice) * h.qty,
+            netPnlPercent: ((ltp - h.avgPrice) / h.avgPrice) * 100,
 
             dayChange: (ltp - prevClose) * h.qty,
             dayChangePercent: ((ltp - prevClose) / prevClose) * 100

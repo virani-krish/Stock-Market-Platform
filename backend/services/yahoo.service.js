@@ -40,6 +40,7 @@ async function fetchPrice() {
 
     lastUpdated = new Date();
     console.log("Stocks updated");
+
   } catch (err) {
     console.error("Yahoo fetch error:", err.message);
   }
@@ -47,6 +48,7 @@ async function fetchPrice() {
 
 function getCachedPrice() {
   return {
+    stockCache,
     data: Object.values(stockCache),
     lastUpdated,
   };
