@@ -590,7 +590,7 @@ hr {
 .market-open {
   color: #4caf50;
   font-size: 12px;
-  padding-right: 5px;
+  /* padding-right: 5px; */
   font-weight: 500;
   animation: blink 1.5s infinite;
 }
@@ -598,7 +598,7 @@ hr {
 .market-closed {
   color: #d60000;
   font-size: 12px;
-  padding-right: 5px;
+  /* padding-right: 5px; */
   font-weight: 500;
   animation: blink 1.5s infinite;
 }

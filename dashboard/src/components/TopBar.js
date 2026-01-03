@@ -22,7 +22,7 @@ const TopBar = ({ username }) => {
         </div>
         <div>
           <p className={marketOpen ? "market-open" : "market-closed"}>
-            Market {marketOpen ? "Open" : "Closed"}
+            MARKET {marketOpen ? "OPEN" : "CLOSED"}
           </p>
         </div>
       </div>
