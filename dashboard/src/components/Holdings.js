@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 
 import api from "./api/axios";
 import { VerticalGraph } from "./VerticalGraph";
@@ -30,6 +30,27 @@ const Holdings = () => {
     return () => clearInterval(interval);
 
   }, []);
+
+  const totalInvestment = useMemo(() => {
+    return allHoldings.reduce(
+      (sum, h) => sum + h.avgPrice * h.qty,
+      0
+    );
+  }, [allHoldings]);
+
+  const totalCurrentValue = useMemo(() => {
+    return allHoldings.reduce(
+      (sum, h) => sum + h.ltp * h.qty,
+      0
+    );
+  }, [allHoldings]);
+
+  const totalPnL = totalCurrentValue - totalInvestment;
+
+  const totalPnLPercent =
+    totalInvestment > 0
+      ? (totalPnL / totalInvestment) * 100
+      : 0;
 
   const labels = allHoldings.map((holding) => holding["name"]);
 
@@ -97,18 +118,24 @@ const Holdings = () => {
       <div className="row">
         <div className="col">
           <h5>
-            29,875.<span>55</span>{" "}
+            {/* 29,875.<span>55</span>{" "} */}
+            ₹{totalInvestment.toLocaleString("en-IN", {
+              minimumFractionDigits: 2,
+            })}
           </h5>
           <p>Total investment</p>
         </div>
         <div className="col">
           <h5>
-            31,428.<span>95</span>{" "}
+            {/* 31,428.<span>95</span>{" "} */}
+            ₹{totalCurrentValue.toLocaleString("en-IN", {
+              minimumFractionDigits: 2,
+            })}
           </h5>
           <p>Current value</p>
         </div>
         <div className="col">
-          <h5>1,553.40 (+5.20%)</h5>
+          <h5 className={totalPnL > 0 ? "profit" : "loss"}>{totalPnL.toFixed(2)} ({totalPnLPercent.toFixed(2)}%)</h5>
           <p>P&L</p>
         </div>
       </div>
