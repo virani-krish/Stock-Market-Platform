@@ -10,6 +10,7 @@ const Holdings = () => {
   const [allHoldings, setAllHoldings] = useState([]);
 
   useEffect(() => {
+
     const fetchHoldings = async () => {
       try {
         const res = await api.get("/allHoldings");
@@ -21,16 +22,23 @@ const Holdings = () => {
     };
 
     fetchHoldings();
+
+    const interval = setInterval(() => {
+      fetchHoldings();
+    }, 5000);
+
+    return () => clearInterval(interval);
+
   }, []);
 
-  const labels = allHoldings.map((holding)=> holding["name"]);
+  const labels = allHoldings.map((holding) => holding["name"]);
 
   const data = {
     labels,
     datasets: [
       {
         label: 'Stock Valuation',
-        data: allHoldings.map((holding) => holding.price * holding.qty),
+        data: allHoldings.map((holding) => holding.currentValue),
         backgroundColor: [
           "rgba(255, 99, 34, 0.5)",
           "rgba(24, 241, 38, 0.5)",
@@ -56,26 +64,29 @@ const Holdings = () => {
             <th>LTP</th>
             <th>Cur. val</th>
             <th>P&L</th>
-            <th>Net chg.</th>
             <th>Day chg.</th>
           </tr>
 
           {allHoldings.map((stock, index) => {
-            const curValue = stock.price * stock.qty;
-            const isProfite = curValue - stock.avg * stock.qty >= 0.0;
+            const curValue = stock.currentValue;
+            const isProfite = stock.currentValue > stock.qty * stock.avgPrice;
             const profClass = isProfite ? "profit" : "loss";
-            const dayChange = stock.isLoss ? "loss" : "profit";
+            const dayChange = stock.dayChange >= 0 ? "profit" : "loss";
 
             return (
               <tr key={index}>
                 <td>{stock.name}</td>
                 <td>{stock.qty}</td>
-                <td>{stock.avg.toFixed(2)}</td>
-                <td>{stock.price.toFixed(2)}</td>
+                <td>{stock.avgPrice.toFixed(2)}</td>
+                <td>{stock.ltp.toFixed(2)}</td>
                 <td>{curValue.toFixed(2)}</td>
-                <td className={profClass}>{(curValue - stock.avg * stock.qty).toFixed(2)}</td>
-                <td className={profClass}>{stock.net}</td>
-                <td className={profClass}>{stock.day}</td>
+                <td className={profClass}>
+                  {stock.netPnl >= 0 ? "+" : ""}
+                  ₹{Math.abs(stock.netPnl).toFixed(2)}
+                  {" "}
+                  ({stock.netPnlPercent.toFixed(2)}%)
+                </td>
+                <td className={dayChange} style={{ fontSize: "14.4px" }}>{stock.dayChangePercent.toFixed(2)}%</td>
               </tr>
             )
           })}
@@ -102,7 +113,7 @@ const Holdings = () => {
         </div>
       </div>
 
-      <VerticalGraph data={data}/>
+      <VerticalGraph data={data} />
 
     </>
   );

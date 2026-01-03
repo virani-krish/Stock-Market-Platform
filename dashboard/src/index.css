@@ -595,7 +595,7 @@ hr {
   animation: blink 1.5s infinite;
 }
 
-.market-close {
+.market-closed {
   color: #d60000;
   font-size: 12px;
   padding-right: 5px;
