@@ -7,13 +7,16 @@ const HoldingSchema = new Schema({
         ref: "user",
         required: true
     },
+    symbol: {
+        type: String,
+    },
     name: {
         type: String,
     },
     qty: {
         type: Number,
     },
-    avg: {
+    avgPrice: {
         type: Number,
     },
     price: {

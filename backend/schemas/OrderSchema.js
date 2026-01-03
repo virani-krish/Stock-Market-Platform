@@ -7,6 +7,9 @@ const OrderSchema = new Schema({
         ref: "user",
         required: true
     },
+    symbol: {
+        type: String,
+    },
     name: {
         type: String,
     },

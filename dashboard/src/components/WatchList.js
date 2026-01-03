@@ -77,7 +77,7 @@ const WatchListItem = ({ stock }) => {
     <li onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave}>
       <div className="item">
         <p className={stock.percent < 0 ? "down" : "up"}>{stock.name}</p>
-        <div className="itemInfo">
+        <div className="item-info">
           <span className="percent">{stock.percent.toFixed(2)}%</span>
           {stock.percent < 0 ? (
             <KeyboardArrowDown className="down" />
@@ -87,22 +87,22 @@ const WatchListItem = ({ stock }) => {
           <span className="price">{stock.price}</span>
         </div>
       </div>
-      {showWatchListActions && <WatchListAction uid={stock.name} />}
+      {showWatchListActions && <WatchListAction symbol={stock.symbol} name={stock.name} />}
     </li>
   )
 
 }
 
-const WatchListAction = ({ uid }) => {
+const WatchListAction = ({ symbol, name }) => {
 
   const { openBuyWindow, openSellWindow } = useContext(GeneralContext);
 
   const handleBuyClick = () => {
-    openBuyWindow(uid);
+    openBuyWindow(symbol, name);
   };
 
   const handleSellClick = () => {
-    openSellWindow(uid);
+    openSellWindow(symbol, name);
   }
 
   return (

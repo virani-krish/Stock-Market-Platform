@@ -49,7 +49,30 @@ app.use("/auth", authRoute);
 app.get('/allHoldings', authMiddleware, async (req, res) => {
     const userId = req.user._id;
     let allHoldings = await HoldingModel.find({ user: userId });
-    res.send(allHoldings);
+
+    const result = holdings.map(h => {
+        const live = livePrices[h.name]; 
+
+        const ltp = live.ltp;
+        const prevClose = live.prevClose;
+
+        return {
+            symbol: h.name,
+            qty: h.qty,
+            avgPrice: h.avg,
+
+            ltp,
+            currentValue: h.qty * ltp,
+
+            netPnl: (ltp - h.avg) * h.qty,
+            netPnlPercent: ((ltp - h.avg) / h.avg) * 100,
+
+            dayChange: (ltp - prevClose) * h.qty,
+            dayChangePercent: ((ltp - prevClose) / prevClose) * 100
+        };
+    });
+
+    res.send(result);
 });
 
 app.get('/allPositions', authMiddleware, async (req, res) => {
@@ -59,12 +82,13 @@ app.get('/allPositions', authMiddleware, async (req, res) => {
 });
 
 app.post("/newOrder", authMiddleware, async (req, res) => {
-    const { name, qty, price, mode } = req.body;
+    const { symbol, name, qty, price, mode } = req.body;
     const userId = req.user._id;
 
     if (req.body.mode == "BUY") {
         let newOrder = new OrderModel({
             user: userId,
+            symbol: symbol,
             name: name,
             qty: qty,
             price: price,
@@ -73,7 +97,7 @@ app.post("/newOrder", authMiddleware, async (req, res) => {
         await newOrder.save();
 
         // Add stock to holding
-        const holding = await HoldingModel.findOne({ name });
+        const holding = await HoldingModel.findOne({ symbol });
 
         // if stock purches second time
         if (holding) {
@@ -81,7 +105,7 @@ app.post("/newOrder", authMiddleware, async (req, res) => {
             const newAvg = ((holding.qty * holding.avg) + (qty * price)) / newQty;
 
             holding.qty = newQty;
-            holding.avg = newAvg;
+            holding.avgPrice = newAvg;
 
             await holding.save();
         }
@@ -89,12 +113,10 @@ app.post("/newOrder", authMiddleware, async (req, res) => {
         else {
             await HoldingModel.create({
                 user: userId,
+                symbol,
                 name,
                 qty,
-                avg: price,
-                price,
-                net: "+0.00%",
-                day: "+0.00%"
+                avgPrice: price
             });
         }
 
@@ -102,7 +124,7 @@ app.post("/newOrder", authMiddleware, async (req, res) => {
     } else if (req.body.mode == "SELL") {
 
         const holding = await HoldingModel.findOne({
-            name,
+            symbol,
             user: userId
         });
 
@@ -115,6 +137,7 @@ app.post("/newOrder", authMiddleware, async (req, res) => {
 
         let newOrder = new OrderModel({
             user: userId,
+            symbol: symbol,
             name: name,
             qty: qty,
             price: price,
@@ -127,7 +150,7 @@ app.post("/newOrder", authMiddleware, async (req, res) => {
         holding.qty -= qty;
 
         if (holding.qty === 0) {
-            await HoldingModel.deleteOne({ name });
+            await HoldingModel.deleteOne({ symbol });
         } else {
             await holding.save();
         }

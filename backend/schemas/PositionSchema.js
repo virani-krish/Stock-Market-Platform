@@ -10,13 +10,13 @@ const PositionSchema = new Schema({
     product: {
         type: String,
     },
-    name: {
+    symbol: {
         type: String,
     },
     qty: {
         type: Number,
     },
-    avg: {
+    avgPrice: {
         type: Number,
     },
     price: {

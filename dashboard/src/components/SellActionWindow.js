@@ -7,7 +7,7 @@ import GeneralContext from "./GeneralContext";
 
 import "./BuyActionWindow.css";
 
-const SellActionWindow = ({ uid }) => {
+const SellActionWindow = ({ symbol, name }) => {
     const [stockQuantity, setStockQuantity] = useState(1);
     const [stockPrice, setStockPrice] = useState(0.0);
 
@@ -43,7 +43,8 @@ const SellActionWindow = ({ uid }) => {
 
         try {
             await axios.post("http://localhost:3002/newOrder", {
-                name: uid,
+                symbol: symbol,
+                name: name,
                 qty: stockQuantity,
                 price: stockPrice,
                 mode: "SELL",

@@ -14,26 +14,31 @@ export const GeneralContextProvider = (props) => {
   const [isBuyWindowOpen, setIsBuyWindowOpen] = useState(false);
   const [isSellWindowOpen, setIsSellWindowOpen] = useState(false);
   const [selectedStockUID, setSelectedStockUID] = useState("");
+  const [selectStockName, setSelectStockName] = useState("");
   const [marketOpen, setMarketOpen] = useState(false);
 
-  const handleOpenBuyWindow = (uid) => {
+  const handleOpenBuyWindow = (symbol, name) => {
     setIsBuyWindowOpen(true);
-    setSelectedStockUID(uid);
+    setSelectedStockUID(symbol);
+    setSelectStockName(name);
   };
 
   const handleCloseBuyWindow = () => {
     setIsBuyWindowOpen(false);
     setSelectedStockUID("");
+    setSelectStockName("");
   };
 
-  const handleOpenSellWindow = (uid) => {
+  const handleOpenSellWindow = (symbol, name) => {
     setIsSellWindowOpen(true);
-    setSelectedStockUID(uid);
+    setSelectedStockUID(symbol);
+    setSelectStockName(name);
   };
 
   const handleCloseSellWindow = () => {
     setIsSellWindowOpen(false);
     setSelectedStockUID("");
+    setSelectStockName("");
   };
 
   return (
@@ -48,8 +53,8 @@ export const GeneralContextProvider = (props) => {
       }}
     >
       {props.children}
-      {isBuyWindowOpen && <BuyActionWindow uid={selectedStockUID} />}
-      {isSellWindowOpen && <SellActionWindow uid={selectedStockUID} />}
+      {isBuyWindowOpen && <BuyActionWindow symbol={selectedStockUID} name={selectStockName} />}
+      {isSellWindowOpen && <SellActionWindow symbol={selectedStockUID} name={selectStockName} />}
     </GeneralContext.Provider>
   );
 };

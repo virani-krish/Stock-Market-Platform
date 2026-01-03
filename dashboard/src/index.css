@@ -716,10 +716,10 @@ hr {
 }
 
 .item-info > * {
-  margin-right: 8px;
+  margin-right: 4px;
 }
 
-.item-info span:nth-child(1) {
+/* .item-info span:nth-child(1) {
   color: rgb(141, 141, 141);
   flex: 1;
 }
@@ -733,6 +733,14 @@ hr {
 .item-info span:nth-child(3) {
   color: rgb(223, 73, 73);
   flex: 1;
+} */
+
+.percent {
+  width: 40px;
+}
+
+.price {
+  width: 40px;
 }
 
 .actions {
