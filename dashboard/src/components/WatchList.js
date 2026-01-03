@@ -9,10 +9,10 @@ import { fetchStocks } from "./api/stocks";
 
 const WatchList = () => {
 
-  const [stocks, setStocks] = useState([]);
+  // const [stocks, setStocks] = useState([]);
   const [loading, setLoading] = useState(true);
   
-  const { setMarketOpen } = useContext(GeneralContext);
+  const { setMarketOpen, stocks, setStocks } = useContext(GeneralContext);
 
   useEffect(() => {
     const loadStocks = async () => {

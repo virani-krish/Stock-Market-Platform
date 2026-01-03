@@ -1,4 +1,4 @@
-import React, { useState, useContext, useRef } from "react";
+import React, { useState, useContext, useRef, useEffect } from "react";
 import { Link } from "react-router-dom";
 
 import axios from "axios";
@@ -11,33 +11,11 @@ const SellActionWindow = ({ symbol, name }) => {
     const [stockQuantity, setStockQuantity] = useState(1);
     const [stockPrice, setStockPrice] = useState(0.0);
 
-    const { closeSellWindow } = useContext(GeneralContext);
+    const { closeSellWindow, stocks } = useContext(GeneralContext);
 
-
-    const containerRef = useRef(null);
-    const offset = useRef({ x: 0, y: 0 });
-
-    const onMouseDown = (e) => {
-        const rect = containerRef.current.getBoundingClientRect();
-        offset.current = {
-            x: e.clientX - rect.left,
-            y: e.clientY - rect.top,
-        };
-
-        document.addEventListener("mousemove", onMouseMove);
-        document.addEventListener("mouseup", onMouseUp);
-    };
-
-    const onMouseMove = (e) => {
-        containerRef.current.style.left = `${e.clientX - offset.current.x}px`;
-        containerRef.current.style.top = `${e.clientY - offset.current.y}px`;
-    };
-
-    const onMouseUp = () => {
-        document.removeEventListener("mousemove", onMouseMove);
-        document.removeEventListener("mouseup", onMouseUp);
-    };
-
+    const selectedStock = stocks.find(
+        (stock) => (stock.symbol == symbol)
+    );
 
     const handleSellClick = async () => {
 
@@ -63,9 +41,16 @@ const SellActionWindow = ({ symbol, name }) => {
         closeSellWindow();
     };
 
+    useEffect(() => {
+
+        if(selectedStock) {
+            setStockPrice(selectedStock.price);
+        }
+
+    });
+
     return (
-        <div className="container" id="buy-window" draggable="true" ref={containerRef}
-            onMouseDown={onMouseDown}>
+        <div className="container" id="buy-window" draggable="true" >
             <div className="regular-order">
                 <div className="inputs">
                     <fieldset>
@@ -93,7 +78,7 @@ const SellActionWindow = ({ symbol, name }) => {
             </div>
 
             <div className="buttons">
-                <span>Margin required ₹140.65</span>
+                <span></span>
                 <div>
                     <Link className="btn btn-blue" onClick={handleSellClick}>
                         Sell
