@@ -16,6 +16,9 @@ const { OrderModel } = require("./model/Order.model");
 // routes
 const authRoute = require("./router/Auth.route");
 const stockRoute = require("./router/Stock.route");
+const holdingRoute = require("./router/Holding.route");
+const positionRoute = require("./router/Position.route");
+const orderRoute = require("./router/Order.route");
 
 const PORT = process.env.PORT || 3002;
 const MONGO_URL = process.env.MONGO_URL;
@@ -46,127 +49,95 @@ app.use("/stocks", stockRoute);
 
 app.use("/auth", authRoute);
 
-app.get('/allHoldings', authMiddleware, async (req, res) => {
-    const userId = req.user._id;
-    let allHoldings = await HoldingModel.find({ user: userId });
+app.use("/holding", holdingRoute);
 
-    const { stockCache } = getCachedPrice();
+app.use("/position", positionRoute);
 
-    const result = allHoldings.map(h => {
-        const live = stockCache[h.symbol];
+app.use("/order", orderRoute);
 
-        const ltp = live ? live.price : h.avgPrice;
-        const prevClose = live
-            ? live.price - live.change
-            : h.avgPrice;
+// app.post("/newOrder", authMiddleware, async (req, res) => {
+//     let { symbol, name, qty, price, mode } = req.body;
+//     const userId = req.user._id;
+//     qty = Number(qty);
+//     price = Number(price);
 
-        return {
-            symbol: h.symbol,
-            name: h.name,
-            qty: h.qty,
-            avgPrice: h.avgPrice,
+//     if (req.body.mode == "BUY") {
+//         let newOrder = new OrderModel({
+//             user: userId,
+//             symbol: symbol,
+//             name: name,
+//             qty: qty,
+//             price: price,
+//             mode: mode,
+//         });
+//         await newOrder.save();
 
-            ltp,
-            currentValue: h.qty * ltp,
+//         // Add stock to holding
+//         const holding = await HoldingModel.findOne({ symbol, user: userId });
 
-            netPnl: (ltp - h.avgPrice) * h.qty,
-            netPnlPercent: ((ltp - h.avgPrice) / h.avgPrice) * 100,
+//         // if stock purches second time
+//         if (holding) {
+//             const newQty = holding.qty + qty;
+//             const newAvg = ((holding.qty * holding.avgPrice) + (qty * price)) / newQty;
 
-            dayChange: (ltp - prevClose) * h.qty,
-            dayChangePercent: ((ltp - prevClose) / prevClose) * 100
-        };
-    });
+//             holding.qty = newQty;
+//             holding.avgPrice = newAvg;
 
-    res.send(result);
-});
+//             await holding.save();
+//         }
+//         // if stock purches first time
+//         else {
+//             await HoldingModel.create({
+//                 user: userId,
+//                 symbol,
+//                 name,
+//                 qty,
+//                 avgPrice: price
+//             });
+//         }
 
-app.get('/allPositions', authMiddleware, async (req, res) => {
-    const userId = req.user._id;
-    let allPositions = await PositionModel.find({ user: userId });
-    res.send(allPositions);
-});
+//         return res.status(200).json({ message: "order Saved!", success: true });
+//     } else if (req.body.mode == "SELL") {
 
-app.post("/newOrder", authMiddleware, async (req, res) => {
-    const { symbol, name, qty, price, mode } = req.body;
-    const userId = req.user._id;
+//         const holding = await HoldingModel.findOne({
+//             symbol,
+//             user: userId
+//         });
 
-    if (req.body.mode == "BUY") {
-        let newOrder = new OrderModel({
-            user: userId,
-            symbol: symbol,
-            name: name,
-            qty: qty,
-            price: price,
-            mode: mode,
-        });
-        await newOrder.save();
+//         if (!holding || holding.qty < qty) {
+//             return res.status(400).json({
+//                 success: false,
+//                 message: "Insufficient stock quantity",
+//             });
+//         }
 
-        // Add stock to holding
-        const holding = await HoldingModel.findOne({ symbol });
+//         let newOrder = new OrderModel({
+//             user: userId,
+//             symbol: symbol,
+//             name: name,
+//             qty: qty,
+//             price: price,
+//             mode: mode,
+//         });
 
-        // if stock purches second time
-        if (holding) {
-            const newQty = holding.qty + qty;
-            const newAvg = ((holding.qty * holding.avg) + (qty * price)) / newQty;
+//         await newOrder.save();
 
-            holding.qty = newQty;
-            holding.avgPrice = newAvg;
+//         // reduce stock from holding
+//         holding.qty -= qty;
 
-            await holding.save();
-        }
-        // if stock purches first time
-        else {
-            await HoldingModel.create({
-                user: userId,
-                symbol,
-                name,
-                qty,
-                avgPrice: price
-            });
-        }
-
-        return res.status(200).json({ message: "order Saved!", success: true });
-    } else if (req.body.mode == "SELL") {
-
-        const holding = await HoldingModel.findOne({
-            symbol,
-            user: userId
-        });
-
-        if (!holding || holding.qty < qty) {
-            return res.status(400).json({
-                success: false,
-                message: "Insufficient stock quantity",
-            });
-        }
-
-        let newOrder = new OrderModel({
-            user: userId,
-            symbol: symbol,
-            name: name,
-            qty: qty,
-            price: price,
-            mode: mode,
-        });
-
-        await newOrder.save();
-
-        // reduce stock from holding
-        holding.qty -= qty;
-
-        if (holding.qty === 0) {
-            await HoldingModel.deleteOne({ symbol });
-        } else {
-            await holding.save();
-        }
+//         if (holding.qty === 0) {
+//             await HoldingModel.deleteOne({ symbol });
+//         } else {
+//             await holding.save();
+//         }
 
 
-        return res.status(200).json({ message: "order Saved!", success: true });
-    } else {
-        return res.status(400).json({ message: "Something went wronge", success: false });
-    }
+//         return res.status(200).json({ message: "order Saved!", success: true });
+//     } else {
+//         return res.status(400).json({ message: "Something went wronge", success: false });
+//     }
 
-});
+// });
 
 
 app.listen(PORT, () => {

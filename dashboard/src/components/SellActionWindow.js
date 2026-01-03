@@ -42,7 +42,7 @@ const SellActionWindow = ({ symbol, name }) => {
     const handleSellClick = async () => {
 
         try {
-            await axios.post("http://localhost:3002/newOrder", {
+            await axios.post("http://localhost:3002/order", {
                 symbol: symbol,
                 name: name,
                 qty: stockQuantity,

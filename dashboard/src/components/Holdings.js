@@ -13,7 +13,7 @@ const Holdings = () => {
 
     const fetchHoldings = async () => {
       try {
-        const res = await api.get("/allHoldings");
+        const res = await api.get("/holding");
         setAllHoldings(res.data);
       } catch (err) {
         // 401 is handled globally by axios interceptor

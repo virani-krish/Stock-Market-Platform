@@ -10,7 +10,7 @@ const Positions = () => {
   useEffect(() => {
     const fetchPositions = async () => {
       try {
-        const res = await api.get("/allPositions");
+        const res = await api.get("/position");
         setAllPositions(res.data);
       } catch (err) {
         // 401 is handled globally by axios interceptor
