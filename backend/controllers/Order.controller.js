@@ -1,5 +1,6 @@
 const { HoldingModel } = require("../model/Holding.model");
 const { OrderModel } = require("../model/Order.model");
+const { WalletModel } = require("../model/Wallet.model");
 
 module.exports.createOrder = async (req, res) => {
     let { symbol, name, qty, price, mode } = req.body;
@@ -7,7 +8,27 @@ module.exports.createOrder = async (req, res) => {
     qty = Number(qty);
     price = Number(price);
 
-    if (req.body.mode == "BUY") {
+    let wallet = await WalletModel.findOne({ user: userId });
+    if (!wallet) {
+        return res.status(400).json({
+            success: false,
+            message: "Wallet not found"
+        });
+    }
+
+    if (mode == "BUY") {
+
+        if (wallet.availableBalance < price * qty) {
+            return res.status(400).json({
+                success: false,
+                message: "you have not enough balance"
+            });
+        }
+
+        wallet.availableBalance = wallet.availableBalance - (qty * price);
+        wallet.usedBalance = wallet.usedBalance + (qty * price);
+        await wallet.save();
+
         let newOrder = new OrderModel({
             user: userId,
             symbol: symbol,
@@ -43,7 +64,7 @@ module.exports.createOrder = async (req, res) => {
         }
 
         return res.status(200).json({ message: "order Saved!", success: true });
-    } else if (req.body.mode == "SELL") {
+    } else if (mode == "SELL") {
 
         const holding = await HoldingModel.findOne({
             symbol,
@@ -56,6 +77,10 @@ module.exports.createOrder = async (req, res) => {
                 message: "Insufficient stock quantity",
             });
         }
+
+        wallet.availableBalance = wallet.availableBalance + (price * qty);
+        wallet.usedBalance = wallet.usedBalance - (holding.avgPrice * qty);
+        await wallet.save();
 
         let newOrder = new OrderModel({
             user: userId,
@@ -72,7 +97,7 @@ module.exports.createOrder = async (req, res) => {
         holding.qty -= qty;
 
         if (holding.qty === 0) {
-            await HoldingModel.deleteOne({ symbol });
+            await HoldingModel.deleteOne({ symbol, user: userId });
         } else {
             await holding.save();
         }

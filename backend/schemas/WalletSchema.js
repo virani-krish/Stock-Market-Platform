@@ -6,10 +6,6 @@ const WalletSchema = new Schema({
         ref: "user",
         required: true
     },
-    balance: {
-        type: Number,
-        required: true
-    },
     usedBalance: {
         type: Number,
         required: true
