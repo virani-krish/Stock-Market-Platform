@@ -1,40 +1,14 @@
-import React, { useState, useContext, useEffect } from "react";
+import React, { useState, useContext } from "react";
 import GeneralContext from "./GeneralContext";
 
 import { Tooltip, Grow } from '@mui/material';
 import { BarChartOutlined, KeyboardArrowDown, KeyboardArrowUp, MoreHoriz } from '@mui/icons-material'
 
 // import { watchlist } from "../data/data";
-import { fetchStocks } from "./api/stocks";
 
 const WatchList = () => {
-
-  // const [stocks, setStocks] = useState([]);
-  const [loading, setLoading] = useState(true);
   
-  const { setMarketOpen, stocks, setStocks } = useContext(GeneralContext);
-
-  useEffect(() => {
-    const loadStocks = async () => {
-      try {
-        const res = await fetchStocks();
-        setStocks(res.data); // <-- backend "data"
-        setMarketOpen(res.marketOpen);
-      } catch (err) {
-        console.error("Failed to load stocks", err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    loadStocks();
-
-    // refresh every 5 seconds
-    const interval = setInterval(loadStocks, 5000);
-    return () => clearInterval(interval);
-  }, []);
-
-  if (loading) return <div>Loading...</div>;
+  const { stocks } = useContext(GeneralContext);
 
   return (
     <div className="watchlist-container">
@@ -51,6 +25,9 @@ const WatchList = () => {
 
       <ul className="list">
         {stocks.map((stock, index) => {
+          if(stock.symbol == "^NSEBANK" || stock.symbol == "^NSEI") {
+            return
+          }
           return (
             <WatchListItem stock={stock} key={index} />
           )

@@ -1,49 +1,28 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useContext } from "react";
 
 import api from "./api/axios";
 import { VerticalGraph } from "./VerticalGraph";
+import GeneralContext from "./GeneralContext";
 
 // import { holdings } from "../data/data";
 
 const Holdings = () => {
 
-  const [allHoldings, setAllHoldings] = useState([]);
-
-  useEffect(() => {
-
-    const fetchHoldings = async () => {
-      try {
-        const res = await api.get("/holding");
-        setAllHoldings(res.data);
-      } catch (err) {
-        // 401 is handled globally by axios interceptor
-        console.error("Failed to fetch holdings");
-      }
-    };
-
-    fetchHoldings();
-
-    const interval = setInterval(() => {
-      fetchHoldings();
-    }, 5000);
-
-    return () => clearInterval(interval);
-
-  }, []);
+  const { holdings } = useContext(GeneralContext);
 
   const totalInvestment = useMemo(() => {
-    return allHoldings.reduce(
+    return holdings.reduce(
       (sum, h) => sum + h.avgPrice * h.qty,
       0
     );
-  }, [allHoldings]);
+  }, [holdings]);
 
   const totalCurrentValue = useMemo(() => {
-    return allHoldings.reduce(
+    return holdings.reduce(
       (sum, h) => sum + h.ltp * h.qty,
       0
     );
-  }, [allHoldings]);
+  }, [holdings]);
 
   const totalPnL = totalCurrentValue - totalInvestment;
 
@@ -52,14 +31,14 @@ const Holdings = () => {
       ? (totalPnL / totalInvestment) * 100
       : 0;
 
-  const labels = allHoldings.map((holding) => holding["name"]);
+  const labels = holdings.map((holding) => holding["name"]);
 
   const data = {
     labels,
     datasets: [
       {
         label: 'Stock Valuation',
-        data: allHoldings.map((holding) => holding.currentValue),
+        data: holdings.map((holding) => holding.currentValue),
         backgroundColor: [
           "rgba(255, 99, 34, 0.5)",
           "rgba(24, 241, 38, 0.5)",
@@ -72,9 +51,13 @@ const Holdings = () => {
     ],
   }
 
+  if(!holdings) {
+    return <div>Loading..</div>
+  }
+
   return (
     <>
-      <h3 className="title">Holdings ({allHoldings.length})</h3>
+      <h3 className="title">Holdings ({holdings.length})</h3>
 
       <div className="order-table">
         <table>
@@ -88,7 +71,7 @@ const Holdings = () => {
             <th>Day chg.</th>
           </tr>
 
-          {allHoldings.map((stock, index) => {
+          {holdings.map((stock, index) => {
             const curValue = stock.currentValue;
             const isProfite = stock.currentValue > stock.qty * stock.avgPrice;
             const profClass = isProfite ? "profit" : "loss";

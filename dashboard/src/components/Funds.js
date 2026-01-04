@@ -1,33 +1,16 @@
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 
 import api from "./api/axios";
+import GeneralContext from "./GeneralContext";
 
 const Funds = () => {
 
-  const [wallet, setWallet] = useState('');
+  const { wallet } = useContext(GeneralContext)
 
-  useEffect(() => {
-
-    const fetchWallet = async () => {
-      try {
-        const res = await api.get("/wallet");
-        setWallet(res.data);
-      } catch (err) {
-        // 401 is handled globally by axios interceptor
-        console.error("Failed to fetch wallet");
-      }
-    };
-
-    fetchWallet();
-
-    const interval = setInterval(() => {
-      fetchWallet();
-    }, 5000);
-
-    return () => clearInterval(interval);
-
-  }, []);
+  if (!wallet) {
+    return <div>Loading wallet...</div>;
+  }
 
   return (
     <>
@@ -46,17 +29,23 @@ const Funds = () => {
           <div className="table">
             <div className="data">
               <p>Total balance</p>
-              <p className="imp colored">{wallet.availableBalance + wallet.usedBalance}</p>
+              <p className="imp colored">₹{(wallet.availableBalance + wallet.usedBalance).toLocaleString("en-IN", {
+                minimumFractionDigits: 2,
+              })}</p>
             </div>
             <div className="data">
               <p>Available balance</p>
-              <p className="imp colored">{wallet.availableBalance}</p>
+              <p className="imp colored">₹{(wallet.availableBalance).toLocaleString("en-IN", {
+                minimumFractionDigits: 2,
+              })}</p>
             </div>
             <div className="data">
               <p>Used balance</p>
-              <p className="imp">{wallet.usedBalance}</p>
+              <p className="imp">₹{(wallet.usedBalance).toLocaleString("en-IN", {
+                minimumFractionDigits: 2,
+              })}</p>
             </div>
-            
+
           </div>
         </div>
 

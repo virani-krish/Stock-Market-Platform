@@ -1,6 +1,35 @@
-import React from "react";
+import React, { useContext, useMemo } from "react";
+import GeneralContext from "./GeneralContext";
 
 const Summary = () => {
+
+  const { holdings, wallet } = useContext(GeneralContext);
+
+  const totalInvestment = useMemo(() => {
+    return holdings.reduce(
+      (sum, h) => sum + h.avgPrice * h.qty,
+      0
+    );
+  }, [holdings]);
+
+  const totalCurrentValue = useMemo(() => {
+    return holdings.reduce(
+      (sum, h) => sum + h.ltp * h.qty,
+      0
+    );
+  }, [holdings]);
+
+  const totalPnL = totalCurrentValue - totalInvestment;
+
+  const totalPnLPercent =
+    totalInvestment > 0
+      ? (totalPnL / totalInvestment) * 100
+      : 0;
+
+  if(!holdings || !wallet) {
+    return <div>Loading..</div>
+  }
+
   return (
     <>
       <div className="username">
@@ -15,17 +44,23 @@ const Summary = () => {
 
         <div className="data">
           <div className="first">
-            <h3>3.74k</h3>
-            <p>Margin available</p>
+            <h3>₹{wallet.availableBalance.toLocaleString("en-IN", {
+              minimumFractionDigits: 2,
+            })}</h3>
+            <p>Balance available</p>
           </div>
           <hr />
 
           <div className="second">
             <p>
-              Margins used <span>0</span>{" "}
+              Balance used <span>₹{wallet.usedBalance.toLocaleString("en-IN", {
+                minimumFractionDigits: 2,
+              })}</span>{" "}
             </p>
             <p>
-              Opening balance <span>3.74k</span>{" "}
+              Total balance <span>₹{(wallet.availableBalance + wallet.usedBalance).toLocaleString("en-IN", {
+                minimumFractionDigits: 2,
+              })}</span>{" "}
             </p>
           </div>
         </div>
@@ -34,13 +69,13 @@ const Summary = () => {
 
       <div className="section">
         <span>
-          <p>Holdings (13)</p>
+          <p>Holdings ({holdings.length})</p>
         </span>
 
         <div className="data">
           <div className="first">
-            <h3 className="profit">
-              1.55k <small>+5.20%</small>{" "}
+            <h3 className={totalPnL > 0 ? "profit" : "loss"}>
+              {totalPnL.toFixed(2)} <small>{totalPnLPercent.toFixed(2)}%</small>{" "}
             </h3>
             <p>P&L</p>
           </div>
@@ -48,10 +83,10 @@ const Summary = () => {
 
           <div className="second">
             <p>
-              Current Value <span>31.43k</span>{" "}
+              Current Value <span>{totalCurrentValue.toFixed(2)}</span>{" "}
             </p>
             <p>
-              Investment <span>29.88k</span>{" "}
+              Investment <span>{totalInvestment.toFixed(2)}</span>{" "}
             </p>
           </div>
         </div>
