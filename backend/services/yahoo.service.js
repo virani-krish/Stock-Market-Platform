@@ -14,6 +14,9 @@ const SYMBOLS = [
   "SBIN.NS",
   "LT.NS",
   "M&M.NS",
+
+  "^NSEI",
+  "^NSEBANK"
 ];
 
 let stockCache = {};
@@ -40,6 +43,7 @@ async function fetchPrice() {
 
     lastUpdated = new Date();
     console.log("Stocks updated");
+    console.log(stockCache);
 
   } catch (err) {
     console.error("Yahoo fetch error:", err.message);
