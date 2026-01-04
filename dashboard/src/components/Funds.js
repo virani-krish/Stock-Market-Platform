@@ -1,7 +1,34 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 
+import api from "./api/axios";
+
 const Funds = () => {
+
+  const [wallet, setWallet] = useState('');
+
+  useEffect(() => {
+
+    const fetchWallet = async () => {
+      try {
+        const res = await api.get("/wallet");
+        setWallet(res.data);
+      } catch (err) {
+        // 401 is handled globally by axios interceptor
+        console.error("Failed to fetch wallet");
+      }
+    };
+
+    fetchWallet();
+
+    const interval = setInterval(() => {
+      fetchWallet();
+    }, 5000);
+
+    return () => clearInterval(interval);
+
+  }, []);
+
   return (
     <>
       <div className="funds">
@@ -18,59 +45,18 @@ const Funds = () => {
 
           <div className="table">
             <div className="data">
-              <p>Available margin</p>
-              <p className="imp colored">4,043.10</p>
+              <p>Total balance</p>
+              <p className="imp colored">{wallet.availableBalance + wallet.usedBalance}</p>
             </div>
             <div className="data">
-              <p>Used margin</p>
-              <p className="imp">3,757.30</p>
+              <p>Available balance</p>
+              <p className="imp colored">{wallet.availableBalance}</p>
             </div>
             <div className="data">
-              <p>Available cash</p>
-              <p className="imp">4,043.10</p>
+              <p>Used balance</p>
+              <p className="imp">{wallet.usedBalance}</p>
             </div>
-            <hr />
-            <div className="data">
-              <p>Opening Balance</p>
-              <p>4,043.10</p>
-            </div>
-            <div className="data">
-              <p>Opening Balance</p>
-              <p>3736.40</p>
-            </div>
-            <div className="data">
-              <p>Payin</p>
-              <p>4064.00</p>
-            </div>
-            <div className="data">
-              <p>SPAN</p>
-              <p>0.00</p>
-            </div>
-            <div className="data">
-              <p>Delivery margin</p>
-              <p>0.00</p>
-            </div>
-            <div className="data">
-              <p>Exposure</p>
-              <p>0.00</p>
-            </div>
-            <div className="data">
-              <p>Options premium</p>
-              <p>0.00</p>
-            </div>
-            <hr />
-            <div className="data">
-              <p>Collateral (Liquid funds)</p>
-              <p>0.00</p>
-            </div>
-            <div className="data">
-              <p>Collateral (Equity)</p>
-              <p>0.00</p>
-            </div>
-            <div className="data">
-              <p>Total Collateral</p>
-              <p>0.00</p>
-            </div>
+            
           </div>
         </div>
 

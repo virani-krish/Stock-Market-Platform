@@ -47,7 +47,7 @@ const SellActionWindow = ({ symbol, name }) => {
             setStockPrice(selectedStock.price);
         }
 
-    });
+    }, []);
 
     return (
         <div className="container" id="buy-window" draggable="true" >

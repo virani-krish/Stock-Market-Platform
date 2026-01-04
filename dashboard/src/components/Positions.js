@@ -7,22 +7,11 @@ const Positions = () => {
 
   let [allPositions, setAllPositions] = useState([]);
 
-  useEffect(() => {
-    const fetchPositions = async () => {
-      try {
-        const res = await api.get("/position");
-        setAllPositions(res.data);
-      } catch (err) {
-        // 401 is handled globally by axios interceptor
-        console.error("Failed to fetch holdings");
-      }
-    };
-
-    fetchPositions();
-  }, []);
+  
 
   return (
     <>
+      <h4 className="title" style={{textDecoration: "underline"}}>Positions are available for intraday and F&O trades only.</h4>
       <h3 className="title">Positions ({allPositions.length})</h3>
 
       <div className="order-table">
