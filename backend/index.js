@@ -7,6 +7,7 @@ const cookieParser = require("cookie-parser");
 
 const { fetchPrice, getCachedPrice } = require("./services/yahoo.service");
 const isMarketOpen = require("./utils/marketTime");
+const { limitOrderProcessor } = require("./services/limitOrderProcessor.service");
 
 // routes
 const authRoute = require("./router/Auth.route");
@@ -36,8 +37,11 @@ app.use(cookieParser());
 
 // start background job
 fetchPrice();
-setInterval(() => {
-    if (isMarketOpen()) fetchPrice();
+setInterval( async () => {
+    if (isMarketOpen()) {
+        await fetchPrice();
+        await limitOrderProcessor();
+    };
 }, 5000);
 
 

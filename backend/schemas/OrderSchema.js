@@ -21,6 +21,11 @@ const OrderSchema = new Schema({
     },
     mode: {
         type: String
+    },
+    status: {
+        type: String,
+        enum: ["PENDING", "EXECUTED", "CANCELLED"],
+        default: "PENDING"
     }
 });
 
