@@ -1,6 +1,7 @@
 const { HoldingModel } = require("../model/Holding.model");
 const { OrderModel } = require("../model/Order.model");
 const { getCachedPrice } = require("./yahoo.service");
+const mongoose = require("mongoose");
 
 module.exports.limitOrderProcessor = async () => {
 
@@ -18,28 +19,59 @@ module.exports.limitOrderProcessor = async () => {
         if (!currentPrice) continue;
 
         if (order.mode === "BUY" && currentPrice <= order.price) {
-
-            const lockedOrder = await OrderModel.findOneAndUpdate(
-                { _id: order._id, status: "PENDING" },
-                { status: "PROCESSING" }
-            );
-
-            // if lockedOrder is false means order process by another cycle.
-            if (!lockedOrder) continue;
-
+            let session;
             try {
+
+                session = await mongoose.startSession();
+                session.startTransaction();
+
+                const lockedOrder = await OrderModel.findOneAndUpdate(
+                    { _id: order._id, status: "PENDING" },
+                    { status: "PROCESSING" },
+                    { session }
+                );
+
+                // if lockedOrder is false means order process by another cycle.
+                if (!lockedOrder) {
+                    await session.abortTransaction();
+                    session.endSession();
+                    continue;
+                };
+
                 // stock add from holdings
-                await executeBuy(lockedOrder, currentPrice);
+                await executeBuy(lockedOrder, currentPrice, session);
 
                 // marks as order executed
-                lockedOrder.status = "EXECUTED";
-                lockedOrder.executedPrice = currentPrice;
-                lockedOrder.executedAt = new Date();
-                await lockedOrder.save();
+                await OrderModel.updateOne(
+                    { _id: lockedOrder._id },
+                    {
+                        $set: {
+                            status: "EXECUTED",
+                            executedPrice: currentPrice,
+                            executedAt: new Date()
+                        }
+                    },
+                    { session }
+                );
+
+                await session.commitTransaction();
+                session.endSession();
 
             } catch (error) {
-                lockedOrder.status = "FAILED";
-                await lockedOrder.save();
+
+                if (session) {
+                    await session.abortTransaction();
+                    session.endSession();
+                }
+
+                await OrderModel.updateOne(
+                    { _id: order._id },
+                    {
+                        $set: {
+                            status: "FAILED"
+                        }
+                    }
+                );
             }
         }
 
@@ -68,7 +100,7 @@ module.exports.limitOrderProcessor = async () => {
 
                 lockedOrder.status = "FAILED";
                 await lockedOrder.save();
-            
+
             }
 
         }
@@ -77,9 +109,9 @@ module.exports.limitOrderProcessor = async () => {
 
 }
 
-async function executeBuy(order, executedPrice) {
+async function executeBuy(order, executedPrice, session) {
 
-    const holding = await HoldingModel.findOne({ symbol: order.symbol, user: order.user });
+    const holding = await HoldingModel.findOne({ symbol: order.symbol, user: order.user },null, { session });
 
     // if stock purches second time
     if (holding) {
@@ -89,17 +121,18 @@ async function executeBuy(order, executedPrice) {
         holding.qty = newQty;
         holding.avgPrice = newAvg;
 
-        await holding.save();
+        await holding.save({ session });
     }
     // if stock purches first time
     else {
-        await HoldingModel.create({
+        await HoldingModel.create([{
             user: order.user,
             symbol: order.symbol,
             name: order.name,
             qty: order.qty,
             avgPrice: executedPrice
-        });
+        }],
+            { session });
     }
 
 }
