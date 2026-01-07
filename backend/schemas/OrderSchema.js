@@ -19,6 +19,9 @@ const OrderSchema = new Schema({
     price: {
         type: Number,
     },
+    executedPrice: {
+        type: Number,
+    },
     mode: {
         type: String
     },
@@ -26,6 +29,9 @@ const OrderSchema = new Schema({
         type: String,
         enum: ["PENDING", "EXECUTED", "CANCELLED"],
         default: "PENDING"
+    },
+    executedAt: {
+        type: Date
     }
 });
 

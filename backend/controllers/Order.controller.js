@@ -39,30 +39,6 @@ module.exports.createOrder = async (req, res) => {
         });
         await newOrder.save();
 
-        // Add stock to holding
-        // const holding = await HoldingModel.findOne({ symbol, user: userId });
-
-        // // if stock purches second time
-        // if (holding) {
-        //     const newQty = holding.qty + qty;
-        //     const newAvg = ((holding.qty * holding.avgPrice) + (qty * price)) / newQty;
-
-        //     holding.qty = newQty;
-        //     holding.avgPrice = newAvg;
-
-        //     await holding.save();
-        // }
-        // // if stock purches first time
-        // else {
-        //     await HoldingModel.create({
-        //         user: userId,
-        //         symbol,
-        //         name,
-        //         qty,
-        //         avgPrice: price
-        //     });
-        // }
-
         return res.status(200).json({ message: "order Saved!", success: true });
     } else if (mode == "SELL") {
 
@@ -92,16 +68,6 @@ module.exports.createOrder = async (req, res) => {
         });
 
         await newOrder.save();
-
-        // reduce stock from holding
-        holding.qty -= qty;
-
-        if (holding.qty === 0) {
-            await HoldingModel.deleteOne({ symbol, user: userId });
-        } else {
-            await holding.save();
-        }
-
 
         return res.status(200).json({ message: "order Saved!", success: true });
     } else {

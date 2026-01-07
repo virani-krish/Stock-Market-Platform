@@ -40,8 +40,8 @@ fetchPrice();
 setInterval( async () => {
     if (isMarketOpen()) {
         await fetchPrice();
-        await limitOrderProcessor();
     };
+    await limitOrderProcessor();
 }, 5000);
 
 

@@ -1,7 +1,10 @@
+const { HoldingModel } = require("../model/Holding.model");
 const { OrderModel } = require("../model/Order.model");
 const { getCachedPrice } = require("./yahoo.service");
 
 module.exports.limitOrderProcessor = async () => {
+
+    console.log("-------------------------price check");
 
     const orders = await OrderModel.find({ status: "PENDING" });
     const { stockCache } = getCachedPrice();
@@ -12,17 +15,109 @@ module.exports.limitOrderProcessor = async () => {
         if (!priceData) continue;
 
         const currentPrice = priceData.price;
-
-        if (!currentPrice) return;
+        if (!currentPrice) continue;
 
         if (order.mode === "BUY" && currentPrice <= order.price) {
-            // execute
+
+            const lockedOrder = await OrderModel.findOneAndUpdate(
+                { _id: order._id, status: "PENDING" },
+                { status: "PROCESSING" }
+            );
+
+            // if lockedOrder is false means order process by another cycle.
+            if (!lockedOrder) continue;
+
+            try {
+                // stock add from holdings
+                await executeBuy(lockedOrder, currentPrice);
+
+                // marks as order executed
+                lockedOrder.status = "EXECUTED";
+                lockedOrder.executedPrice = currentPrice;
+                lockedOrder.executedAt = new Date();
+                await lockedOrder.save();
+
+            } catch (error) {
+                lockedOrder.status = "FAILED";
+                await lockedOrder.save();
+            }
         }
 
         if (order.mode === "SELL" && currentPrice >= order.price) {
-            //  execute
+
+            const lockedOrder = await OrderModel.findOneAndUpdate(
+                { _id: order._id, status: "PENDING" },
+                { status: "PROCESSING" }
+            );
+
+            // if lockedOrder is false means order process by another cycle.
+            if (!lockedOrder) continue;
+
+            try {
+
+                // stock reduce from holding
+                await executeSell(lockedOrder, currentPrice);
+
+                // marks as order executed
+                lockedOrder.status = "EXECUTED";
+                lockedOrder.executedPrice = currentPrice;
+                lockedOrder.executedAt = new Date();
+                await lockedOrder.save();
+
+            } catch (error) {
+
+                lockedOrder.status = "FAILED";
+                await lockedOrder.save();
+            
+            }
+
         }
 
+    }
+
+}
+
+async function executeBuy(order, executedPrice) {
+
+    const holding = await HoldingModel.findOne({ symbol: order.symbol, user: order.user });
+
+    // if stock purches second time
+    if (holding) {
+        const newQty = holding.qty + order.qty;
+        const newAvg = ((holding.qty * holding.avgPrice) + (order.qty * executedPrice)) / newQty;
+
+        holding.qty = newQty;
+        holding.avgPrice = newAvg;
+
+        await holding.save();
+    }
+    // if stock purches first time
+    else {
+        await HoldingModel.create({
+            user: order.user,
+            symbol: order.symbol,
+            name: order.name,
+            qty: order.qty,
+            avgPrice: executedPrice
+        });
+    }
+
+}
+
+async function executeSell(order, executedPrice) {
+
+    const holding = await HoldingModel.findOne({ symbol: order.symbol, user: order.user });
+
+    if (!holding || holding.qty < order.qty) {
+        throw new Error("Invalid SELL execution");
+    }
+
+    holding.qty -= order.qty;
+
+    if (holding.qty === 0) {
+        await HoldingModel.deleteOne({ symbol, user: order.user });
+    } else {
+        await holding.save();
     }
 
 }
