@@ -9,7 +9,7 @@ const Funds = () => {
   const { wallet } = useContext(GeneralContext)
 
   if (!wallet) {
-    return <div>Loading wallet...</div>;
+    return <div>Loading..</div>;
   }
 
   return (

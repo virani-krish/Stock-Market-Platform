@@ -23,6 +23,10 @@ const TopBar = ({ username }) => {
     });
   }, [stocks]);
 
+  if(!stocks) {
+    return <div>Loading..</div>
+  }
+
   return (
     <div className="topbar-container">
       <div className="indices-container">

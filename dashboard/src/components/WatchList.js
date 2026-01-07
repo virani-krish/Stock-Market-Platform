@@ -10,6 +10,10 @@ const WatchList = () => {
   
   const { stocks } = useContext(GeneralContext);
 
+  if(!stocks) {
+    return <div>Loading..</div>
+  }
+
   return (
     <div className="watchlist-container">
       <div className="search-container">

@@ -75,7 +75,7 @@ const Summary = () => {
         <div className="data">
           <div className="first">
             <h3 className={totalPnL > 0 ? "profit" : "loss"}>
-              {totalPnL.toFixed(2)} <small>{totalPnLPercent.toFixed(2)}%</small>{" "}
+              {totalPnL.toFixed(2)} <small className={totalPnL > 0 ? "profit" : "loss"}>{totalPnLPercent.toFixed(2)}%</small>{" "}
             </h3>
             <p>P&L</p>
           </div>

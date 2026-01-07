@@ -18,17 +18,29 @@ const BuyActionWindow = ({ symbol, name }) => {
     );
 
     const handleBuyClick = async () => {
-        await axios.post("http://localhost:3002/order", {
-            symbol: symbol,
-            name: name,
-            qty: stockQuantity,
-            price: stockPrice,
-            mode: "BUY",
-        }, {
-            withCredentials: true
-        });
+        try {
 
-        closeBuyWindow();
+            await axios.post(
+                "http://localhost:3002/order",
+                {
+                    symbol,
+                    name,
+                    qty: Number(stockQuantity),
+                    price: Number(stockPrice),
+                    mode: "BUY",
+                },
+                { withCredentials: true }
+            );
+
+            closeBuyWindow();
+
+        } catch (err) {
+            if (err.response) {
+                alert(err.response.data.message || "Order failed")
+            } else {
+                alert("Server not reachable");
+            }
+        }
     };
 
     const handleCancelClick = () => {
@@ -37,7 +49,7 @@ const BuyActionWindow = ({ symbol, name }) => {
 
     useEffect(() => {
 
-        if(selectedStock) {
+        if (selectedStock) {
             setStockPrice(selectedStock.price);
         }
 
